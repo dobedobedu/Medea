@@ -137,7 +137,7 @@ export function useRealtimeSession(callbacks: RealtimeSessionCallbacks = {}) {
         model: 'gpt-realtime-mini',
         config: {
           inputAudioTranscription: {
-            model: 'gpt-4o-mini-transcribe',
+            model: 'whisper-1',
           },
         },
         outputGuardrails: outputGuardrails ?? [],
