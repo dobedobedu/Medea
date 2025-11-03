@@ -11,7 +11,7 @@ export async function GET() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "gpt-audio-mini-2025-10-06",
+          model: "gpt-realtime-2025-08-28",
         }),
       }
     );
