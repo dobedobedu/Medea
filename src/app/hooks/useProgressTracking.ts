@@ -122,10 +122,11 @@ class SimpleProgressTracker {
 
   recordVocabularyPractice(
     word: string,
-    _definition: string,
-    _pronunciationClear: boolean,
-    _meaningUnderstood: boolean,
-    _usedInSentence: boolean
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    definition: string,
+    pronunciationClear: boolean,
+    meaningUnderstood: boolean,
+    usedInSentence: boolean
   ): void {
     const progress = this.loadProgress();
     progress.total_sessions++;
