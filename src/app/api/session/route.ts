@@ -12,6 +12,12 @@ export async function GET() {
         },
         body: JSON.stringify({
           model: "gpt-realtime-mini",
+          turn_detection: {
+            type: "server_vad",
+            threshold: 0.5,
+            prefix_padding_ms: 300,
+            silence_duration_ms: 200,
+          },
         }),
       }
     );

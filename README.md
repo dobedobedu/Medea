@@ -114,43 +114,42 @@ export const greeterAgent = new RealtimeAgent({
 // An Agent Set is just an array of the agents that participate in the scenario
 export default [greeterAgent, haikuWriterAgent];
 ```
-## CustomerServiceRetail Flow
+## SocialSkills Flow
 
-This is a more complex, representative implementation that illustrates a customer service flow, with the following features:
-- A more complex agent graph with agents for user authentication, returns, sales, and a placeholder human agent for escalations.
-- An escalation by the [returns](https://github.com/openai/openai-realtime-agents/blob/60f4effc50a539b19b2f1fa4c38846086b58c295/src/app/agentConfigs/customerServiceRetail/returns.ts#L233) agent to `o4-mini` to validate and initiate a return, as an example high-stakes decision, using a similar pattern to the above.
-- Prompting models to follow a state machine, for example to accurately collect things like names and phone numbers with confirmation character by character to authenticate a user.
-  - To test this flow, say that you'd like to return your snowboard and go through the necessary prompts!
+This is a comprehensive implementation for social skills coaching, with the following features:
+- A multi-agent system with four specialized coaches: rulesCoach (sports rules), socialCoach (social situations), practicePartner (roleplay), and emotionGuide (coping strategies).
+- Seamless handoffs between agents with structured context passing to maintain conversation continuity.
+- Topic selection prompts to guide users to the right agent based on their needs.
+- Each agent has specialized knowledge and coaching strategies appropriate for 5th-grade students navigating American school culture.
 
-Configuration in [src/app/agentConfigs/customerServiceRetail/index.ts](src/app/agentConfigs/customerServiceRetail/index.ts).
+Configuration in [src/app/agentConfigs/socialSkills/index.ts](src/app/agentConfigs/socialSkills/index.ts).
 ```javascript
-import authentication from "./authentication";
-import returns from "./returns";
-import sales from "./sales";
-import simulatedHuman from "./simulatedHuman";
-import { injectTransferTools } from "../utils";
+import { rulesCoach } from './rulesCoach';
+import { socialCoach } from './socialCoach';
+import { practicePartner } from './practicePartner';
+import { emotionGuide } from './emotionGuide';
 
-authentication.downstreamAgents = [returns, sales, simulatedHuman];
-returns.downstreamAgents = [authentication, sales, simulatedHuman];
-sales.downstreamAgents = [authentication, returns, simulatedHuman];
-simulatedHuman.downstreamAgents = [authentication, returns, sales];
+// Configure handoffs between all social skills agents
+rulesCoach.handoffs = [socialCoach, practicePartner, emotionGuide];
+socialCoach.handoffs = [rulesCoach, practicePartner, emotionGuide];
+practicePartner.handoffs = [rulesCoach, socialCoach, emotionGuide];
+emotionGuide.handoffs = [rulesCoach, socialCoach, practicePartner];
 
-const agents = injectTransferTools([
-  authentication,
-  returns,
-  sales,
-  simulatedHuman,
-]);
-
-export default agents;
+// Social skills scenario with all four agents
+export const socialSkillsScenario = [
+  rulesCoach,
+  socialCoach,
+  practicePartner,
+  emotionGuide,
+];
 ```
 
 ## Schematic
 
-This diagram illustrates a more advanced interaction flow defined in `src/app/agentConfigs/customerServiceRetail/`, including detailed events.
+This diagram illustrates a more advanced interaction flow defined in `src/app/agentConfigs/socialSkills/`, including detailed events.
 
 <details>
-<summary><strong>Show CustomerServiceRetail Flow Diagram</strong></summary>
+<summary><strong>Show SocialSkills Flow Diagram</strong></summary>
 
 ```mermaid
 sequenceDiagram
@@ -158,10 +157,9 @@ sequenceDiagram
     participant WebClient as Next.js Client
     participant NextAPI as /api/session
     participant RealtimeAPI as OpenAI Realtime API
-    participant AgentManager as Agents (authentication, returns, sales, simulatedHuman)
-    participant o1mini as "o4-mini" (Escalation Model)
+    participant AgentManager as Agents (rulesCoach, socialCoach, practicePartner, emotionGuide)
 
-    Note over WebClient: User navigates to ?agentConfig=customerServiceRetail
+    Note over WebClient: User navigates to ?agentConfig=socialSkills
     User->>WebClient: Open Page
     WebClient->>NextAPI: GET /api/session
     NextAPI->>RealtimeAPI: POST /v1/realtime/sessions
@@ -173,33 +171,35 @@ sequenceDiagram
     RealtimeAPI->>WebClient: SDP answer
     WebClient->>WebClient: DataChannel "oai-events" established
 
-    Note over AgentManager: Default agent is "authentication"
-    User->>WebClient: "Hi, I'd like to return my snowboard."
+    Note over AgentManager: Default agent can be any of the four coaches
+    User->>WebClient: "I need help learning baseball rules."
     WebClient->>AgentManager: conversation.item.create (role=user)
     WebClient->>RealtimeAPI: {type: "conversation.item.create"}
     WebClient->>RealtimeAPI: {type: "response.create"}
 
-    authentication->>AgentManager: Requests user info, calls authenticate_user_information()
-    AgentManager-->>WebClient: function_call => name="authenticate_user_information"
-    WebClient->>WebClient: handleFunctionCall => verifies details
+    rulesCoach->>AgentManager: Explains baseball rules with examples
+    AgentManager-->>WebClient: conversation.item.create (assistant role)
+    WebClient->>User: Displays baseball rules explanation
 
-    Note over AgentManager: After user is authenticated
-    authentication->>AgentManager: transferAgents("returns")
-    AgentManager-->>WebClient: function_call => name="transferAgents" args={ destination: "returns" }
-    WebClient->>WebClient: setSelectedAgentName("returns")
+    Note over AgentManager: User wants to practice joining games
+    rulesCoach->>AgentManager: transferAgents("practicePartner") with context
+    AgentManager-->>WebClient: function_call => name="transferAgents" args={ destination: "practicePartner", topic: "baseball", student_reply: "I want to join games" }
+    WebClient->>WebClient: setSelectedAgentName("practicePartner")
 
-    Note over returns: The user wants to process a return
-    returns->>AgentManager: function_call => checkEligibilityAndPossiblyInitiateReturn
-    AgentManager-->>WebClient: function_call => name="checkEligibilityAndPossiblyInitiateReturn"
+    Note over practicePartner: Practice joining basketball games
+    practicePartner->>AgentManager: Sets up roleplay scenario
+    AgentManager-->>WebClient: conversation.item.create (assistant role)
+    WebClient->>User: "Great! Let's practice joining basketball games"
 
-    Note over WebClient: The WebClient calls /api/chat/completions with model="o4-mini"
-    WebClient->>o1mini: "Is this item eligible for return?"
-    o1mini->>WebClient: "Yes/No (plus notes)"
+    Note over AgentManager: User feels nervous about social situations
+    practicePartner->>AgentManager: transferAgents("emotionGuide") with context
+    AgentManager-->>WebClient: function_call => name="transferAgents" args={ destination: "emotionGuide", topic: "social anxiety", student_reply: "I'm scared they won't let me play" }
+    WebClient->>WebClient: setSelectedAgentName("emotionGuide")
 
-    Note right of returns: Returns uses the result from "o4-mini"
-    returns->>AgentManager: "Return is approved" or "Return is denied"
+    Note over emotionGuide: Provides coping strategies
+    emotionGuide->>AgentManager: Shares anxiety management techniques
     AgentManager->>WebClient: conversation.item.create (assistant role)
-    WebClient->>User: Displays final verdict
+    WebClient->>User: Displays coping strategies and encouragement
 ```
 
 </details>
@@ -208,7 +208,7 @@ sequenceDiagram
 ## Next Steps
 - You can copy these templates to make your own multi-agent voice app! Once you make a new agent set config, add it to `src/app/agentConfigs/index.ts` and you should be able to select it in the UI in the "Scenario" dropdown menu.
 - Each agentConfig can define instructions, tools, and toolLogic. By default all tool calls simply return `True`, unless you define the toolLogic, which will run your specific tool logic and return an object to the conversation (e.g. for retrieved RAG context).
-- If you want help creating your own prompt using the conventions shown in customerServiceRetail, including defining a state machine, we've included a metaprompt [here](src/app/agentConfigs/voiceAgentMetaprompt.txt), or you can use our [Voice Agent Metaprompter GPT](https://chatgpt.com/g/g-678865c9fb5c81918fa28699735dd08e-voice-agent-metaprompt-gpt)
+- If you want help creating your own prompt using the conventions shown in socialSkills, including defining multi-agent handoffs and specialized coaching strategies, we've included a metaprompt [here](src/app/agentConfigs/voiceAgentMetaprompt.txt), or you can use our [Voice Agent Metaprompter GPT](https://chatgpt.com/g/g-678865c9fb5c81918fa28699735dd08e-voice-agent-metaprompt-gpt)
 
 ## Output Guardrails
 Assistant messages are checked for safety and compliance before they are shown in the UI.  The guardrail call now lives directly inside `src/app/App.tsx`: when a `response.text.delta` stream starts we mark the message as **IN_PROGRESS**, and once the server emits `guardrail_tripped` or `response.done` we mark the message as **FAIL** or **PASS** respectively.  If you want to change how moderation is triggered or displayed, search for `guardrail_tripped` inside `App.tsx` and tweak the logic there.

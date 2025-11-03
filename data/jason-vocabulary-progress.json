@@ -1,0 +1,273 @@
+{
+  "student_name": "Jason",
+  "created_date": "2025-11-03T13:00:00.000Z",
+  "last_session": "2025-11-03T13:00:00.000Z",
+  "vocabulary_mastered": [
+    "recess",
+    "cafeteria",
+    "assignment",
+    "homework"
+  ],
+  "vocabulary_in_progress": [
+    {
+      "word": "original",
+      "definition": "first, not a copy",
+      "pronunciation_attempts": 2,
+      "pronunciation_clear": false,
+      "meaning_understood": true,
+      "used_in_sentence": false,
+      "last_practiced": "2025-11-01T15:30:00.000Z",
+      "difficulty_rating": 4
+    },
+    {
+      "word": "originate",
+      "definition": "where something comes from",
+      "pronunciation_attempts": 1,
+      "pronunciation_clear": false,
+      "meaning_understood": false,
+      "used_in_sentence": false,
+      "last_practiced": "2025-11-01T15:25:00.000Z",
+      "difficulty_rating": 5
+    },
+    {
+      "word": "principal",
+      "definition": "head of the school",
+      "pronunciation_attempts": 3,
+      "pronunciation_clear": true,
+      "meaning_understood": true,
+      "used_in_sentence": true,
+      "last_practiced": "2025-10-30T10:15:00.000Z",
+      "difficulty_rating": 2
+    }
+  ],
+  "vocabulary_needs_review": [
+    "permission",
+    "excuse",
+    "locker"
+  ],
+  "pronunciation_sessions": [
+    {
+      "date": "2025-11-01T15:45:00.000Z",
+      "duration_minutes": 3,
+      "sounds_practiced": ["R sounds", "TH sounds"],
+      "improvement_notes": "Tongue position for R sounds improving, TH still needs work",
+      "confidence_rating": 3
+    },
+    {
+      "date": "2025-10-30T10:30:00.000Z",
+      "duration_minutes": 2,
+      "sounds_practiced": ["L sounds"],
+      "improvement_notes": "L sounds much clearer when practicing slowly",
+      "confidence_rating": 4
+    }
+  ],
+  "problem_sounds": [
+    "R sounds",
+    "TH sounds",
+    "consonant clusters"
+  ],
+  "improved_sounds": [
+    "L sounds",
+    "S sounds"
+  ],
+  "total_sessions": 12,
+  "total_vocabulary_words": 15,
+  "confidence_score": 3.2,
+  "streak_days": 3,
+  "recent_words_practiced": [
+    "original",
+    "originate",
+    "principal",
+    "assignment",
+    "recess",
+    "cafeteria",
+    "permission",
+    "excuse",
+    "project",
+    "presentation"
+  ],
+  "recent_pronunciation_focus": [
+    "R sounds",
+    "TH sounds",
+    "consonant clusters"
+  ],
+  "curriculum_categories": {
+    "school_essentials": {
+      "priority": "high",
+      "words": [
+        "assignment",
+        "homework",
+        "project",
+        "presentation",
+        "deadline",
+        "schedule",
+        "period",
+        "bell",
+        "dismissal"
+      ]
+    },
+    "people_and_places": {
+      "priority": "high",
+      "words": [
+        "principal",
+        "teacher",
+        "classmate",
+        "cafeteria",
+        "playground",
+        "library",
+        "gymnasium",
+        "auditorium",
+        "nurse",
+        "counselor"
+      ]
+    },
+    "social_situations": {
+      "priority": "medium",
+      "words": [
+        "permission",
+        "excuse",
+        "apologize",
+        "compliment",
+        "invitation",
+        "rejection",
+        "agreement",
+        "disagreement",
+        "compromise",
+        "collaborate"
+      ]
+    },
+    "academic_vocabulary": {
+      "priority": "medium",
+      "words": [
+        "original",
+        "originate",
+        "origin",
+        "initial",
+        "initiate",
+        "initiative",
+        "archaic",
+        "archive",
+        "archaeology",
+        "analyze",
+        "evaluate",
+        "synthesize",
+        "hypothesis",
+        "conclusion",
+        "evidence"
+      ]
+    },
+    "daily_routines": {
+      "priority": "high",
+      "words": [
+        "recess",
+        "lunchtime",
+        "dismissal",
+        "assembly",
+        "fire_drill",
+        "locker",
+        "hallway",
+        "bathroom",
+        "water_fountain",
+        "bus_stop"
+      ]
+    },
+    "american_culture": {
+      "priority": "medium",
+      "words": [
+        "thanksgiving",
+        "independence_day",
+        "halloween",
+        "valentine",
+        "homecoming",
+        "prom",
+        "yearbook",
+        "cheerleader",
+        "quarterback",
+        "captain"
+      ]
+    },
+    "friendship_building": {
+      "priority": "high",
+      "words": [
+        "conversation",
+        "introduce",
+        "compliment",
+        "invitation",
+        "accept",
+        "decline",
+        "negotiate",
+        "compromise",
+        "empathy",
+        "supportive"
+      ]
+    }
+  },
+  "acknowledge": {
+      "example": "Please acknowledge that you received my email about the field trip.",
+      "context": "School communication and confirming understanding",
+      "difficulty": 4,
+      "pronunciation_notes": "Break into: ac-know-ledge. The 'ac-' sounds like 'ak', not 'ass'."
+    },
+    "cultural_context_examples": {
+    "original": {
+      "example": "The original copy of your permission slip needs to be signed by your parents.",
+      "context": "School forms and official documents",
+      "difficulty": 4,
+      "pronunciation_notes": "Stress on 'ri-gi' - avoid saying 'o-ri-gi-nal'"
+    },
+    "originate": {
+      "example": "Where did this tradition originate? It started at our school 20 years ago.",
+      "context": "Understanding history and origins of school traditions",
+      "difficulty": 5,
+      "pronunciation_notes": "Break into syllables: o-ri-gi-nate"
+    },
+    "principal": {
+      "example": "If you need to leave school early, you must get permission from the principal's office.",
+      "context": "School authority and procedures",
+      "difficulty": 2,
+      "pronunciation_notes": "PRIN-ci-pal, not princi-PLE (that's a math term!)"
+    },
+    "recess": {
+      "example": "After lunch, we have 20 minutes of recess to play on the playground.",
+      "context": "Daily school schedule and play time",
+      "difficulty": 1,
+      "pronunciation_notes": "RE-cess - emphasis on first syllable"
+    },
+    "cafeteria": {
+      "example": "I meet my friends in the cafeteria every day for lunch.",
+      "context": "School dining and social area",
+      "difficulty": 3,
+      "pronunciation_notes": "Caf-e-te-ri-a - 5 syllables, say them clearly"
+    },
+    "permission": {
+      "example": "You need permission from the teacher to use the restroom during class.",
+      "context": "School rules and asking for things",
+      "difficulty": 3,
+      "pronunciation_notes": "Per-MIS-sion - stress middle syllable"
+    },
+    "assignment": {
+      "example": "Our math assignment is due tomorrow, so don't forget to finish it.",
+      "context": "Schoolwork and deadlines",
+      "difficulty": 2,
+      "pronunciation_notes": "As-SIGN-ment - clear 'g' sound"
+    },
+    "presentation": {
+      "example": "I have to give a presentation about my science project on Friday.",
+      "context": "Speaking in front of class",
+      "difficulty": 4,
+      "pronunciation_notes": "Pres-en-TA-tion - stress 'ta'"
+    },
+    "collaborate": {
+      "example": "Let's collaborate on this group project so we can get a good grade.",
+      "context": "Working together in teams",
+      "difficulty": 4,
+      "pronunciation_notes": "Co-LAB-o-rate - stress 'lab'"
+    },
+    "initiative": {
+      "example": "The teacher praised Jason for taking the initiative to help clean up the classroom.",
+      "context": "Leadership and being proactive",
+      "difficulty": 5,
+      "pronunciation_notes": "i-NI-ti-a-tive - stress 'ni'"
+    }
+  }
+}
