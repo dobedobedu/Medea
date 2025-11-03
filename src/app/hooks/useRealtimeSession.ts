@@ -139,7 +139,7 @@ export function useRealtimeSession(callbacks: RealtimeSessionCallbacks = {}) {
           inputAudioTranscription: {
             model: 'whisper-1',
           },
-          turn_detection: {
+          turnDetection: {
             type: "server_vad",
             threshold: 0.5,
             prefix_padding_ms: 300,

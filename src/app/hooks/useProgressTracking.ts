@@ -122,7 +122,6 @@ class SimpleProgressTracker {
 
   recordVocabularyPractice(
     word: string,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     definition: string,
     pronunciationClear: boolean,
     meaningUnderstood: boolean,
@@ -132,6 +131,41 @@ class SimpleProgressTracker {
     progress.total_sessions++;
     progress.total_vocabulary_words++;
     progress.last_session = new Date().toISOString();
+
+    // Create or update vocabulary word entry
+    const existingWordIndex = progress.vocabulary_in_progress.findIndex(w => w.word === word);
+
+    const wordData: VocabularyWord = {
+      word,
+      definition,
+      pronunciation_attempts: 1,
+      pronunciation_clear: pronunciationClear,
+      meaning_understood: meaningUnderstood,
+      used_in_sentence: usedInSentence,
+      last_practiced: new Date().toISOString(),
+      difficulty_rating: 3, // default
+    };
+
+    if (existingWordIndex >= 0) {
+      // Update existing word
+      progress.vocabulary_in_progress[existingWordIndex].pronunciation_attempts++;
+      progress.vocabulary_in_progress[existingWordIndex].pronunciation_clear = pronunciationClear;
+      progress.vocabulary_in_progress[existingWordIndex].meaning_understood = meaningUnderstood;
+      progress.vocabulary_in_progress[existingWordIndex].used_in_sentence = usedInSentence;
+      progress.vocabulary_in_progress[existingWordIndex].last_practiced = new Date().toISOString();
+    } else {
+      // Add new word
+      progress.vocabulary_in_progress.push(wordData);
+    }
+
+    // Check if word should be moved to mastered
+    if (pronunciationClear && meaningUnderstood && usedInSentence) {
+      // Remove from in progress and add to mastered
+      progress.vocabulary_in_progress = progress.vocabulary_in_progress.filter(w => w.word !== word);
+      if (!progress.vocabulary_mastered.includes(word)) {
+        progress.vocabulary_mastered.push(word);
+      }
+    }
 
     // Add to recent words
     progress.recent_words_practiced = [word, ...progress.recent_words_practiced.slice(0, 9)];
@@ -180,6 +214,69 @@ class SimpleProgressTracker {
       problemSounds: progress.problem_sounds,
       improvedSounds: progress.improved_sounds,
     };
+  }
+
+  markSoundImproved(sound: string): void {
+    const progress = this.loadProgress();
+
+    // Remove from problem sounds if it exists
+    progress.problem_sounds = progress.problem_sounds.filter(s => s !== sound);
+
+    // Add to improved sounds if not already there
+    if (!progress.improved_sounds.includes(sound)) {
+      progress.improved_sounds.push(sound);
+    }
+
+    this.saveProgress(progress);
+  }
+
+  resetProgress(): void {
+    const defaultProgress = {
+      student_name: "Jason",
+      created_date: new Date().toISOString(),
+      last_session: new Date().toISOString(),
+      vocabulary_mastered: [],
+      vocabulary_in_progress: [],
+      vocabulary_needs_review: [],
+      pronunciation_sessions: [],
+      problem_sounds: [],
+      improved_sounds: [],
+      total_sessions: 0,
+      total_vocabulary_words: 0,
+      confidence_score: 3,
+      streak_days: 0,
+      recent_words_practiced: [],
+      recent_pronunciation_focus: [],
+    };
+
+    this.saveProgress(defaultProgress);
+  }
+
+  exportProgress(): string {
+    const progress = this.loadProgress();
+    return JSON.stringify(progress, null, 2);
+  }
+
+  importProgress(jsonData: string): boolean {
+    try {
+      const data = JSON.parse(jsonData);
+
+      // Validate the structure (basic check)
+      if (
+        typeof data === 'object' &&
+        data !== null &&
+        typeof data.student_name === 'string' &&
+        typeof data.created_date === 'string'
+      ) {
+        this.saveProgress(data);
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error('Error importing progress:', error);
+      return false;
+    }
   }
 }
 
@@ -265,8 +362,7 @@ export function useProgressTracking() {
           vocab.definition,
           vocab.pronunciation_clear,
           vocab.meaning_understood,
-          vocab.used_in_sentence,
-          vocab.difficulty_rating
+          vocab.used_in_sentence
         );
 
         // Sync with server

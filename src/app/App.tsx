@@ -336,6 +336,25 @@ function App() {
     }
   };
 
+  // Individual handlers for BottomToolbar compatibility
+  const onConnect = () => {
+    if (sessionStatus !== "CONNECTED" && sessionStatus !== "CONNECTING") {
+      connectToRealtime();
+    }
+  };
+
+  const onDisconnect = () => {
+    if (sessionStatus === "CONNECTED") {
+      disconnectFromRealtime();
+      setSessionStatus("DISCONNECTED");
+    }
+  };
+
+  const onPause = () => {
+    // Pause functionality not implemented, using disconnect for now
+    onDisconnect();
+  };
+
   
   const handleSelectedAgentChange = (
     e: React.ChangeEvent<HTMLSelectElement>
@@ -698,6 +717,9 @@ function App() {
         <BottomToolbar
           sessionStatus={sessionStatus}
           onToggleConnection={onToggleConnection}
+          onConnect={onConnect}
+          onDisconnect={onDisconnect}
+          onPause={onPause}
           isPTTActive={isPTTActive}
           setIsPTTActive={setIsPTTActive}
           isPTTUserSpeaking={isPTTUserSpeaking}

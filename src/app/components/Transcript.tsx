@@ -102,7 +102,7 @@ function Transcript({
             .sort((a, b) => a.createdAtMs - b.createdAtMs)
             .filter((item) => {
               // Hide HANDOFF messages from user interface
-              return !item.title.startsWith('HANDOFF');
+              return !item.title?.startsWith('HANDOFF');
             })
             .map((item) => {
               const {
