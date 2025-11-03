@@ -3,7 +3,7 @@ import {
 } from '@openai/agents/realtime';
 
 export const rulesCoach = new RealtimeAgent({
-  name: 'rulesCoach',
+  name: 'Game rules',
   voice: 'sage',
   instructions: `You are Jason's quick-action sports coach. Get straight to roleplaying sports situations.
 

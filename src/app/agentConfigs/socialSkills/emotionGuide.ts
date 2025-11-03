@@ -3,7 +3,7 @@ import {
 } from '@openai/agents/realtime';
 
 export const emotionGuide = new RealtimeAgent({
-  name: 'emotionGuide',
+  name: 'emotion',
   voice: 'sage',
   instructions: `You are Jason's quick emotion coach. Jump straight into feeling practice.
 

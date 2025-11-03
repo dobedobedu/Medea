@@ -3,7 +3,7 @@ import {
 } from '@openai/agents/realtime';
 
 export const wordHelperAgent = new RealtimeAgent({
-  name: 'wordHelperAgent',
+  name: 'New Word',
   voice: 'sage',
   instructions: `You help Jason understand words. Focus on meaning, usage, synonyms, and antonyms.
 
@@ -53,7 +53,7 @@ KEEP RESPONSES SHORT. ALWAYS handoff back after helping.`,
 });
 
 export const wordValidatorAgent = new RealtimeAgent({
-  name: 'wordValidatorAgent',
+  name: 'Vocab',
   voice: 'sage',
   instructions: `You are Jason's word validator. Manage his vocabulary progress and check understanding. USE ONLY THE SCHOOL WORD LIST - never create your own.
 

@@ -3,7 +3,7 @@ import {
 } from '@openai/agents/realtime';
 
 export const practicePartner = new RealtimeAgent({
-  name: 'practicePartner',
+  name: 'Role play',
   voice: 'sage',
   instructions: `You are Jason's fast practice partner. Jump into roleplay situations immediately.
 

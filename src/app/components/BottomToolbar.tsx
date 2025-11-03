@@ -4,6 +4,9 @@ import { SessionStatus } from "@/app/types";
 interface BottomToolbarProps {
   sessionStatus: SessionStatus;
   onToggleConnection: () => void;
+  onConnect: () => void;
+  onDisconnect: () => void;
+  onPause: () => void;
   isPTTActive: boolean;
   setIsPTTActive: (val: boolean) => void;
   isPTTUserSpeaking: boolean;
@@ -20,6 +23,9 @@ interface BottomToolbarProps {
 function BottomToolbar({
   sessionStatus,
   onToggleConnection,
+  onConnect,
+  onDisconnect,
+  onPause,
   isPTTActive,
   setIsPTTActive,
   isPTTUserSpeaking,
@@ -60,12 +66,31 @@ function BottomToolbar({
 
   return (
     <div className="p-4 flex flex-row items-center justify-center gap-x-8">
+      {/* Connect Button */}
       <button
-        onClick={onToggleConnection}
-        className={getConnectionButtonClasses()}
-        disabled={isConnecting}
+        onClick={onConnect}
+        disabled={isConnected || isConnecting}
+        className="text-white text-base p-2 w-24 rounded-md h-full bg-green-600 hover:bg-green-700 cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
       >
-        {getConnectionButtonLabel()}
+        Connect
+      </button>
+
+      {/* Pause Button */}
+      <button
+        onClick={onPause}
+        disabled={!isConnected}
+        className="text-white text-base p-2 w-24 rounded-md h-full bg-yellow-600 hover:bg-yellow-700 cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
+      >
+        Pause
+      </button>
+
+      {/* End Button */}
+      <button
+        onClick={onDisconnect}
+        disabled={!isConnected}
+        className="text-white text-base p-2 w-24 rounded-md h-full bg-red-600 hover:bg-red-700 cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
+      >
+        End
       </button>
 
       <div className="flex flex-row items-center gap-2">

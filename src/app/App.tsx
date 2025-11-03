@@ -3,7 +3,6 @@ import React, { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 
-import Image from "next/image";
 
 // UI components
 import Transcript from "./components/Transcript";
@@ -107,7 +106,7 @@ function App() {
     useState<SessionStatus>("DISCONNECTED");
 
   const [isEventsPaneExpanded, setIsEventsPaneExpanded] =
-    useState<boolean>(true);
+    useState<boolean>(false); // Hide by default now
   const [userText, setUserText] = useState<string>("");
   const [isPTTActive, setIsPTTActive] = useState<boolean>(false);
   const [isPTTUserSpeaking, setIsPTTUserSpeaking] = useState<boolean>(false);
@@ -118,6 +117,19 @@ function App() {
       return stored ? stored === 'true' : true;
     },
   );
+
+  // Tab state for three-tab navigation
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    const agentConfig = searchParams.get("agentConfig") || "dailyReflection";
+    // Map agent configs to tab names
+    const tabMap: Record<string, string> = {
+      "learn": "learn",
+      "socialSkills": "socialSkills",
+      "dailyReflection": "dailyJournal",
+      "chatSupervisor": "dailyJournal"
+    };
+    return tabMap[agentConfig] || "dailyJournal";
+  });
 
   // Initialize the recording hook.
   const { startRecording, stopRecording, downloadRecording } =
@@ -324,13 +336,7 @@ function App() {
     }
   };
 
-  const handleAgentChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newAgentConfig = e.target.value;
-    const url = new URL(window.location.toString());
-    url.searchParams.set("agentConfig", newAgentConfig);
-    window.location.replace(url.toString());
-  };
-
+  
   const handleSelectedAgentChange = (
     e: React.ChangeEvent<HTMLSelectElement>
   ) => {
@@ -347,6 +353,26 @@ function App() {
     const url = new URL(window.location.toString());
     url.searchParams.set("codec", newCodec);
     window.location.replace(url.toString());
+  };
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+
+    // Map tab names to agent configs
+    const agentConfigMap: Record<string, string> = {
+      "learn": "learn",
+      "socialSkills": "socialSkills",
+      "dailyJournal": "dailyReflection" // Use chatSupervisor as placeholder until ready
+    };
+
+    const agentConfig = agentConfigMap[tab] || "dailyReflection";
+    const url = new URL(window.location.toString());
+    url.searchParams.set("agentConfig", agentConfig);
+    window.location.replace(url.toString());
+  };
+
+  const toggleLogs = () => {
+    setIsEventsPaneExpanded(!isEventsPaneExpanded);
   };
 
   useEffect(() => {
@@ -429,120 +455,248 @@ function App() {
     };
   }, [sessionStatus]);
 
-  const agentSetKey = searchParams.get("agentConfig") || "default";
-
   return (
     <div className="text-base flex flex-col h-screen bg-gray-100 text-gray-800 relative">
-      <div className="p-5 text-lg font-semibold flex justify-between items-center">
-        <div
-          className="flex items-center cursor-pointer"
-          onClick={() => window.location.reload()}
-        >
-          <div>
-            <Image
-              src="/openai-logomark.svg"
-              alt="OpenAI Logo"
-              width={20}
-              height={20}
-              className="mr-2"
+      {/* Three-Tab Top Bar */}
+      <div className="bg-white border-b border-gray-200 px-4 py-3">
+        <div className="flex justify-center space-x-2">
+          <button
+            onClick={() => handleTabChange("learn")}
+            className={`px-6 py-2 rounded-lg font-medium text-base transition-colors touch-manipulation ${
+              activeTab === "learn"
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            }`}
+          >
+            Leanr
+          </button>
+          <button
+            onClick={() => handleTabChange("socialSkills")}
+            className={`px-6 py-2 rounded-lg font-medium text-base transition-colors touch-manipulation ${
+              activeTab === "socialSkills"
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            }`}
+          >
+            Interact
+          </button>
+          <button
+            onClick={() => handleTabChange("dailyJournal")}
+            className={`px-6 py-2 rounded-lg font-medium text-base transition-colors touch-manipulation ${
+              activeTab === "dailyJournal"
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            }`}
+          >
+            Reflect
+          </button>
+        </div>
+      </div>
+
+      {/* Two-Column Layout */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left Column - Agent Panel (30% width on desktop) */}
+        <div className="hidden md:flex md:flex-col md:w-1/3 lg:w-[30%] bg-white border-r border-gray-200">
+          <div className="p-4 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-800">
+              {activeTab === "learn" && "Leanr"}
+              {activeTab === "socialSkills" && "Interact"}
+              {activeTab === "dailyJournal" && "Reflect"}
+            </h2>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-4">
+            {selectedAgentConfigSet && (
+              <div className="space-y-2">
+                {selectedAgentConfigSet.map((agent) => (
+                  <div
+                    key={agent.name}
+                    className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                      selectedAgentName === agent.name
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-200 hover:border-gray-300"
+                    }`}
+                    onClick={() => handleSelectedAgentChange({ target: { value: agent.name } } as any)}
+                  >
+                    <div className="font-medium text-gray-800">{agent.name}</div>
+                    <div className="text-sm text-gray-500">
+                      {agent.name === selectedAgentName ? "Active" : "Tap to select"}
+                    </div>
+                  </div>
+                ))}
+
+                <button className="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors">
+                  + Add Agent
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Mobile Agent Panel (Accordion on ≤768px) */}
+        <div className="md:hidden w-full">
+          <div className="bg-white border-b border-gray-200">
+            <div className="p-4">
+              <h2 className="text-lg font-semibold text-gray-800 mb-3">
+                {activeTab === "learn" && "Leanr"}
+                {activeTab === "socialSkills" && "Interact"}
+                {activeTab === "dailyJournal" && "Reflect"}
+              </h2>
+
+              {selectedAgentConfigSet && (
+                <div className="space-y-2">
+                  {selectedAgentConfigSet.map((agent) => (
+                    <div
+                      key={agent.name}
+                      className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                        selectedAgentName === agent.name
+                          ? "border-blue-500 bg-blue-50"
+                          : "border-gray-200 hover:border-gray-300"
+                      }`}
+                      onClick={() => handleSelectedAgentChange({ target: { value: agent.name } } as any)}
+                    >
+                      <div className="font-medium text-gray-800">{agent.name}</div>
+                      <div className="text-sm text-gray-500">
+                        {agent.name === selectedAgentName ? "Active" : "Tap to select"}
+                      </div>
+                    </div>
+                  ))}
+
+                  <button className="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors">
+                    + Add Agent
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column - Transcript Area */}
+        <div className="flex-1 flex flex-col min-w-0">
+          <div className="p-3 bg-white border-b border-gray-200">
+            <div className="text-sm font-medium text-gray-600">
+              {selectedAgentName && (
+                <span>Active Agent: <span className="text-blue-600">{selectedAgentName}</span></span>
+              )}
+              {sessionStatus && (
+                <span className="ml-3 text-gray-500">
+                  ({sessionStatus})
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-hidden">
+            <Transcript
+              userText={userText}
+              setUserText={setUserText}
+              onSendMessage={handleSendTextMessage}
+              downloadRecording={downloadRecording}
+              canSend={sessionStatus === "CONNECTED"}
             />
           </div>
-          <div>
-            Realtime API <span className="text-gray-500">Agents</span>
-          </div>
         </div>
-        <div className="flex items-center">
-          <label className="flex items-center text-base gap-1 mr-2 font-medium">
-            Scenario
-          </label>
-          <div className="relative inline-block">
-            <select
-              value={agentSetKey}
-              onChange={handleAgentChange}
-              className="appearance-none border border-gray-300 rounded-lg text-base px-2 py-1 pr-8 cursor-pointer font-normal focus:outline-none"
+      </div>
+
+      {/* Footer with Control Buttons */}
+      <div className="bg-white border-t border-gray-200 px-4 py-3">
+        <div className="flex justify-between items-center">
+          <button
+            onClick={toggleLogs}
+            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-700 font-medium transition-colors touch-manipulation"
+          >
+            {isEventsPaneExpanded ? "Hide Logs △" : "Logs ▽"}
+          </button>
+
+          {/* Connection Control Buttons */}
+          <div className="flex gap-2">
+            {/* Connect Button */}
+            <button
+              onClick={() => {
+                if (sessionStatus !== 'CONNECTED' && sessionStatus !== 'CONNECTING') {
+                  onToggleConnection();
+                }
+              }}
+              disabled={sessionStatus === 'CONNECTED' || sessionStatus === 'CONNECTING'}
+              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors touch-manipulation disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              {Object.keys(allAgentSets).map((agentKey) => (
-                <option key={agentKey} value={agentKey}>
-                  {agentKey}
-                </option>
-              ))}
-            </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-gray-600">
-              <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                <path
-                  fillRule="evenodd"
-                  d="M5.23 7.21a.75.75 0 011.06.02L10 10.44l3.71-3.21a.75.75 0 111.04 1.08l-4.25 3.65a.75.75 0 01-1.04 0L5.21 8.27a.75.75 0 01.02-1.06z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
+              Connect
+            </button>
+
+            {/* Pause Button */}
+            <button
+              onClick={() => {
+                if (sessionStatus === 'CONNECTED') {
+                  interrupt();
+                }
+              }}
+              disabled={sessionStatus !== 'CONNECTED'}
+              className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-medium transition-colors touch-manipulation disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              Pause
+            </button>
+
+            {/* End Button */}
+            <button
+              onClick={() => {
+                if (sessionStatus === 'CONNECTED') {
+                  onToggleConnection();
+                }
+              }}
+              disabled={sessionStatus !== 'CONNECTED'}
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors touch-manipulation disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              End
+            </button>
           </div>
 
-          {agentSetKey && (
-            <div className="flex items-center ml-6">
-              <label className="flex items-center text-base gap-1 mr-2 font-medium">
-                Agent
-              </label>
-              <div className="relative inline-block">
-                <select
-                  value={selectedAgentName}
-                  onChange={handleSelectedAgentChange}
-                  className="appearance-none border border-gray-300 rounded-lg text-base px-2 py-1 pr-8 cursor-pointer font-normal focus:outline-none"
-                >
-                  {selectedAgentConfigSet?.map((agent) => (
-                    <option key={agent.name} value={agent.name}>
-                      {agent.name}
-                    </option>
-                  ))}
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-gray-600">
-                  <svg
-                    className="h-4 w-4"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M5.23 7.21a.75.75 0 011.06.02L10 10.44l3.71-3.21a.75.75 0 111.04 1.08l-4.25 3.65a.75.75 0 01-1.04 0L5.21 8.27a.75.75 0 01.02-1.06z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
+          <div className="text-sm text-gray-500">
+            {sessionStatus}
+          </div>
+        </div>
+      </div>
+
+      {/* Slide-up Logs Overlay */}
+      {isEventsPaneExpanded && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center">
+          <div className="absolute inset-0 bg-black bg-opacity-50" onClick={toggleLogs} />
+          <div className="relative w-full h-3/4 bg-white rounded-t-xl shadow-xl flex flex-col">
+            <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+              <h3 className="text-lg font-semibold">Logs</h3>
+              <button
+                onClick={toggleLogs}
+                className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded text-gray-700 transition-colors"
+              >
+                Hide Logs △
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              <div className="h-full w-full">
+                <Events isExpanded={true} />
               </div>
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="flex flex-1 gap-2 px-2 overflow-hidden relative">
-        <Transcript
-          userText={userText}
-          setUserText={setUserText}
-          onSendMessage={handleSendTextMessage}
-          downloadRecording={downloadRecording}
-          canSend={
-            sessionStatus === "CONNECTED"
-          }
+      {/* Keep BottomToolbar for connection controls but hide it visually */}
+      <div className="hidden">
+        <BottomToolbar
+          sessionStatus={sessionStatus}
+          onToggleConnection={onToggleConnection}
+          isPTTActive={isPTTActive}
+          setIsPTTActive={setIsPTTActive}
+          isPTTUserSpeaking={isPTTUserSpeaking}
+          handleTalkButtonDown={handleTalkButtonDown}
+          handleTalkButtonUp={handleTalkButtonUp}
+          isEventsPaneExpanded={isEventsPaneExpanded}
+          setIsEventsPaneExpanded={setIsEventsPaneExpanded}
+          isAudioPlaybackEnabled={isAudioPlaybackEnabled}
+          setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
+          codec={urlCodec}
+          onCodecChange={handleCodecChange}
         />
-
-        <Events isExpanded={isEventsPaneExpanded} />
       </div>
-
-      <BottomToolbar
-        sessionStatus={sessionStatus}
-        onToggleConnection={onToggleConnection}
-        isPTTActive={isPTTActive}
-        setIsPTTActive={setIsPTTActive}
-        isPTTUserSpeaking={isPTTUserSpeaking}
-        handleTalkButtonDown={handleTalkButtonDown}
-        handleTalkButtonUp={handleTalkButtonUp}
-        isEventsPaneExpanded={isEventsPaneExpanded}
-        setIsEventsPaneExpanded={setIsEventsPaneExpanded}
-        isAudioPlaybackEnabled={isAudioPlaybackEnabled}
-        setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
-        codec={urlCodec}
-        onCodecChange={handleCodecChange}
-      />
     </div>
   );
 }
