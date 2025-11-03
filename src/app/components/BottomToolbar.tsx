@@ -22,7 +22,6 @@ interface BottomToolbarProps {
 
 function BottomToolbar({
   sessionStatus,
-  onToggleConnection,
   onConnect,
   onDisconnect,
   onPause,
@@ -45,24 +44,6 @@ function BottomToolbar({
     const newCodec = e.target.value;
     onCodecChange(newCodec);
   };
-
-  function getConnectionButtonLabel() {
-    if (isConnected) return "Disconnect";
-    if (isConnecting) return "Connecting...";
-    return "Connect";
-  }
-
-  function getConnectionButtonClasses() {
-    const baseClasses = "text-white text-base p-2 w-36 rounded-md h-full";
-    const cursorClass = isConnecting ? "cursor-not-allowed" : "cursor-pointer";
-
-    if (isConnected) {
-      // Connected -> label "Disconnect" -> red
-      return `bg-red-600 hover:bg-red-700 ${cursorClass} ${baseClasses}`;
-    }
-    // Disconnected or connecting -> label is either "Connect" or "Connecting" -> black
-    return `bg-black hover:bg-gray-900 ${cursorClass} ${baseClasses}`;
-  }
 
   return (
     <div className="p-4 flex flex-row items-center justify-center gap-x-8">

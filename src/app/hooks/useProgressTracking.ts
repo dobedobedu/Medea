@@ -122,10 +122,10 @@ class SimpleProgressTracker {
 
   recordVocabularyPractice(
     word: string,
-    definition: string,
-    pronunciationClear: boolean,
-    meaningUnderstood: boolean,
-    usedInSentence: boolean
+    _definition: string,
+    _pronunciationClear: boolean,
+    _meaningUnderstood: boolean,
+    _usedInSentence: boolean
   ): void {
     const progress = this.loadProgress();
     progress.total_sessions++;

@@ -96,7 +96,7 @@ function Transcript({
         {/* Transcript Content */}
         <div
           ref={transcriptRef}
-          className="overflow-auto p-4 flex flex-col gap-y-4 h-full"
+          className="overflow-auto p-4 flex flex-col gap-y-4 flex-1 min-h-0"
         >
           {[...transcriptItems]
             .sort((a, b) => a.createdAtMs - b.createdAtMs)
