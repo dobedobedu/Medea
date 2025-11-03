@@ -134,7 +134,7 @@ export function useRealtimeSession(callbacks: RealtimeSessionCallbacks = {}) {
             return pc;
           },
         }),
-        model: 'gpt-realtime-2025-08-28',
+        model: 'gpt-realtime-mini',
         config: {
           inputAudioTranscription: {
             model: 'gpt-4o-mini-transcribe',
