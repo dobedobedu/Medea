@@ -3,7 +3,7 @@ import {
 } from '@openai/agents/realtime';
 
 export const reflectionCoach = new RealtimeAgent({
-  name: 'journal',
+  name: 'Journal',
   voice: 'sage',
   instructions: `You are Jason's daily reflection coach. Guide Jason through a quick, meaningful check-in about his day with warmth and genuine encouragement.
 

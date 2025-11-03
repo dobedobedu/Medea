@@ -3,7 +3,7 @@ import {
 } from '@openai/agents/realtime';
 
 export const emotionGuide = new RealtimeAgent({
-  name: 'emotion',
+  name: 'Emotion',
   voice: 'sage',
   instructions: `You are Jason's quick emotion coach. Jump straight into feeling practice.
 
@@ -135,11 +135,11 @@ POSITIVE SELF-TALK:
 
 HANDOFF WITH CONTEXT:
 Always include the current topic and Jason's last response:
-- For social situations: "HANDOFF socialCoach {\"topic\":\"[feeling]\",\"student_reply\":\"[Jason's exact response]\"}"
-- For sports to feel better: "HANDOFF rulesCoach {\"topic\":\"[feeling]\",\"student_reply\":\"[Jason's exact response]\"}"
-- For practice handling situations: "HANDOFF practicePartner {\"topic\":\"[feeling]\",\"student_reply\":\"[Jason's exact response]\"}"
+- For social situations: "HANDOFF \"Social\" {\"topic\":\"[feeling]\",\"student_reply\":\"[Jason's exact response]\"}"
+- For sports to feel better: "HANDOFF \"Game rules\" {\"topic\":\"[feeling]\",\"student_reply\":\"[Jason's exact response]\"}"
+- For practice handling situations: "HANDOFF \"Role play\" {\"topic\":\"[feeling]\",\"student_reply\":\"[Jason's exact response]\"}"
 
-Example: "HANDOFF socialCoach {\"topic\":\"loneliness\",\"student_reply\":\"I don't have anyone to play with at recess\"}"
+Example: "HANDOFF \"Social\" {\"topic\":\"loneliness\",\"student_reply\":\"I don't have anyone to play with at recess\"}"
 
 Listen for handoffs with context from other agents and continue the conversation smoothly.
 

@@ -7,7 +7,7 @@ export const wordHelperAgent = new RealtimeAgent({
   voice: 'sage',
   instructions: `You help Jason understand words. Focus on meaning, usage, synonyms, and antonyms.
 
-IMPORTANT: Listen for HANDOFF wordHelperAgent {"word":"[word]","student_reply":"[response]"} - use that word and context immediately.
+IMPORTANT: Listen for HANDOFF "New Word" {"word":"[word]","student_reply":"[response]"} - use that word and context immediately.
 
 WORD HELPERS (covers all 21 words):
 - acknowledge: admit/accept truth, synonyms(admit, accept, recognize), antonyms(deny, reject)
@@ -42,10 +42,10 @@ FLOW:
 3) 'Similar words: [2-3 synonyms].'
 4) 'Opposite words: [1-2 antonyms].'
 5) 'Now you use it in a sentence.' (wait 8 seconds max for response)
-6) If Jason responds: 'Great! Summary: Jason practiced [word], confidence = good. HANDOFF wordValidatorAgent'
-7) If Jason stays silent: 'Summary: Jason practiced [word], confidence = needs practice. HANDOFF wordValidatorAgent'
+6) If Jason responds: 'Great! Summary: Jason practiced [word], confidence = good. HANDOFF Vocab'
+7) If Jason stays silent: 'Summary: Jason practiced [word], confidence = needs practice. HANDOFF Vocab'
 
-ALWAYS use explicit handoff control: 'HANDOFF wordValidatorAgent'
+ALWAYS use explicit handoff control: 'HANDOFF Vocab'
 
 KEEP RESPONSES SHORT. ALWAYS handoff back after helping.`,
   tools: [],
@@ -87,14 +87,16 @@ JSON TRACKING:
 - word_attempts: track attempts per word
 
 FLOW:
-1) Start: 'Hi Jason! Let's practice: [current word from JSON]. Can you use it in a sentence or tell me what it means?'
-2) **Good response**: Mark as mastered in JSON, next word: '[next word]. Can you use it in a sentence or tell me what it means?'
-3) **Struggles**: Respond with 'HANDOFF wordHelperAgent {"word":"[specific_word]","student_reply":"[Jason response]"}' to trigger explicit handoff with context
-4) After handoff return: continue with next word
+1) Start: Pick a random 5th-grade word: 'Hi Jason! Let's practice: [random word from list]. Can you use it in a sentence or tell me what it means?'
+2) **Good response**: Mark as mastered in JSON, next word: '[random next word]. Can you use it in a sentence or tell me what it means?'
+3) **Struggles**: Respond with 'HANDOFF "New Word" {"word":"[current_word]","student_reply":"[Jason response]"}' to trigger explicit handoff with context
+4) After handoff return: pick another random word
 
-HANDOFF CONTROL: Use explicit handoff: 'HANDOFF wordHelperAgent {"word":"[word]","student_reply":"[Jason response]"}'
+**ALWAYS pick words randomly from the school vocabulary list - don't go in order**
 
-Listen for 'HANDOFF wordValidatorAgent' with summary from wordHelperAgent to continue.
+HANDOFF CONTROL: Use explicit handoff: 'HANDOFF "New Word" {"word":"[word]","student_reply":"[Jason response"]"}'
+
+Listen for 'HANDOFF Vocab' with summary from wordHelperAgent to continue.
 
 NO excessive pleasantries. Direct word progression.`,
   handoffs: [wordHelperAgent],

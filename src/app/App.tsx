@@ -468,7 +468,7 @@ function App() {
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
             }`}
           >
-            Leanr
+            Learn
           </button>
           <button
             onClick={() => handleTabChange("socialSkills")}
@@ -609,45 +609,59 @@ function App() {
           </button>
 
           {/* Connection Control Buttons */}
-          <div className="flex gap-2">
-            {/* Connect Button */}
-            <button
-              onClick={() => {
-                if (sessionStatus !== 'CONNECTED' && sessionStatus !== 'CONNECTING') {
-                  onToggleConnection();
-                }
-              }}
-              disabled={sessionStatus === 'CONNECTED' || sessionStatus === 'CONNECTING'}
-              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors touch-manipulation disabled:bg-gray-400 disabled:cursor-not-allowed"
-            >
-              Connect
-            </button>
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-2">
+              {/* Connect/End Conditional Button */}
+              <button
+                onClick={onToggleConnection}
+                disabled={sessionStatus === 'CONNECTING'}
+                className={`px-4 py-2 font-medium transition-colors touch-manipulation rounded-lg ${
+                  sessionStatus === 'CONNECTED'
+                    ? "bg-red-600 hover:bg-red-700 text-white"
+                    : sessionStatus === 'CONNECTING'
+                      ? "bg-gray-400 text-white cursor-not-allowed"
+                      : "bg-green-600 hover:bg-green-700 text-white"
+                }`}
+              >
+                {sessionStatus === 'CONNECTED' ? "End" : sessionStatus === 'CONNECTING' ? "Connecting..." : "Connect"}
+              </button>
 
-            {/* Pause Button */}
-            <button
-              onClick={() => {
-                if (sessionStatus === 'CONNECTED') {
-                  interrupt();
-                }
-              }}
-              disabled={sessionStatus !== 'CONNECTED'}
-              className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-medium transition-colors touch-manipulation disabled:bg-gray-400 disabled:cursor-not-allowed"
-            >
-              Pause
-            </button>
+              {/* Push-to-Talk Button */}
+              <button
+                onMouseDown={handleTalkButtonDown}
+                onMouseUp={handleTalkButtonUp}
+                onTouchStart={handleTalkButtonDown}
+                onTouchEnd={handleTalkButtonUp}
+                disabled={!isPTTActive || sessionStatus !== 'CONNECTED'}
+                className={`px-4 py-2 font-medium transition-colors touch-manipulation rounded-lg ${
+                  isPTTUserSpeaking
+                    ? "bg-orange-500 text-white"
+                    : isPTTActive && sessionStatus === 'CONNECTED'
+                      ? "bg-blue-600 hover:bg-blue-700 text-white"
+                      : "bg-gray-400 text-gray-200 cursor-not-allowed"
+                }`}
+              >
+                {isPTTUserSpeaking ? "Speaking..." : "Push to Talk"}
+              </button>
+            </div>
 
-            {/* End Button */}
-            <button
-              onClick={() => {
-                if (sessionStatus === 'CONNECTED') {
-                  onToggleConnection();
-                }
-              }}
-              disabled={sessionStatus !== 'CONNECTED'}
-              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors touch-manipulation disabled:bg-gray-400 disabled:cursor-not-allowed"
-            >
-              End
-            </button>
+            {/* Push-to-Talk Toggle */}
+            <div className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                id="ptt-toggle-main"
+                checked={isPTTActive}
+                onChange={(e) => setIsPTTActive(e.target.checked)}
+                disabled={sessionStatus !== 'CONNECTED'}
+                className="w-4 h-4"
+              />
+              <label
+                htmlFor="ptt-toggle-main"
+                className={`cursor-pointer ${sessionStatus !== 'CONNECTED' ? 'text-gray-400' : 'text-gray-700'}`}
+              >
+                Enable Push-to-Talk (hold button to speak)
+              </label>
+            </div>
           </div>
 
           <div className="text-sm text-gray-500">

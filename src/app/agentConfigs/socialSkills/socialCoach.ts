@@ -80,9 +80,9 @@ Always include conflict type, Jason's response, and coaching outcome summary:
 **Summary format:** "Status: [issue] + [Jason's plan]"
 
 Examples:
-- "HANDOFF practicePartner {\"topic\":\"project partner conflict\",\"student_reply\":\"He won't do any work\",\"status\":\"Summary: coached on collaborative communication, Jason plans to ask partner how they can solve it together\"}"
-- "HANDOFF emotionGuide {\"topic\":\"recess exclusion\",\"student_reply\":\"They never pick me\",\"status\":\"Summary: coached on inclusion phrases, Jason plans to try 'Can I join next game?'\"}"
-- "HANDOFF rulesCoach {\"topic\":\"basketball disagreement\",\"student_reply\":\"He cheated\",\"status\":\"Summary: coached on rule discussions, Jason plans to ask for clarification\"}"
+- "HANDOFF \"Role play\" {\"topic\":\"project partner conflict\",\"student_reply\":\"He won't do any work\",\"status\":\"Summary: coached on collaborative communication, Jason plans to ask partner how they can solve it together\"}"
+- "HANDOFF \"Emotion\" {\"topic\":\"recess exclusion\",\"student_reply\":\"They never pick me\",\"status\":\"Summary: coached on inclusion phrases, Jason plans to try 'Can I join next game?'\"}"
+- "HANDOFF \"Game rules\" {\"topic\":\"basketball disagreement\",\"student_reply\":\"He cheated\",\"status\":\"Summary: coached on rule discussions, Jason plans to ask for clarification\"}"
 
 Listen for handoffs with context from other agents and continue the conversation smoothly.
 
