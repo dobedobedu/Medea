@@ -4,6 +4,7 @@ import React, {
   createContext,
   useContext,
   useState,
+  useEffect,
   FC,
   PropsWithChildren,
 } from "react";
@@ -22,12 +23,34 @@ type TranscriptContextValue = {
   addTranscriptBreadcrumb: (title: string, data?: Record<string, any>) => void;
   toggleTranscriptItemExpand: (itemId: string) => void;
   updateTranscriptItem: (itemId: string, updatedProperties: Partial<TranscriptItem>) => void;
+  clearTranscript: () => void;
 };
 
 const TranscriptContext = createContext<TranscriptContextValue | undefined>(undefined);
 
+const TRANSCRIPT_STORAGE_KEY = "medea:transcript:v1";
+const MAX_STORED_ITEMS = 250;
+
+function safeLoadTranscript(): TranscriptItem[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(TRANSCRIPT_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((x) => x && typeof x === "object" && typeof x.itemId === "string")
+      .slice(-MAX_STORED_ITEMS) as TranscriptItem[];
+  } catch (err) {
+    console.warn("Failed to load transcript from localStorage:", err);
+    return [];
+  }
+}
+
 export const TranscriptProvider: FC<PropsWithChildren> = ({ children }) => {
-  const [transcriptItems, setTranscriptItems] = useState<TranscriptItem[]>([]);
+  const [transcriptItems, setTranscriptItems] = useState<TranscriptItem[]>(
+    () => safeLoadTranscript(),
+  );
 
   function newTimestampPretty(): string {
     const now = new Date();
@@ -111,6 +134,32 @@ export const TranscriptProvider: FC<PropsWithChildren> = ({ children }) => {
     );
   };
 
+  const clearTranscript: TranscriptContextValue["clearTranscript"] = () => {
+    setTranscriptItems([]);
+    if (typeof window !== "undefined") {
+      try {
+        window.localStorage.removeItem(TRANSCRIPT_STORAGE_KEY);
+      } catch (err) {
+        console.warn("Failed to clear transcript in localStorage:", err);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handle = window.setTimeout(() => {
+      try {
+        window.localStorage.setItem(
+          TRANSCRIPT_STORAGE_KEY,
+          JSON.stringify(transcriptItems.slice(-MAX_STORED_ITEMS)),
+        );
+      } catch (err) {
+        console.warn("Failed to persist transcript to localStorage:", err);
+      }
+    }, 250);
+    return () => window.clearTimeout(handle);
+  }, [transcriptItems]);
+
   return (
     <TranscriptContext.Provider
       value={{
@@ -120,6 +169,7 @@ export const TranscriptProvider: FC<PropsWithChildren> = ({ children }) => {
         addTranscriptBreadcrumb,
         toggleTranscriptItemExpand,
         updateTranscriptItem,
+        clearTranscript,
       }}
     >
       {children}

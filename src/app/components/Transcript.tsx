@@ -1,4 +1,4 @@
-"use-client";
+"use client";
 
 import React, { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
@@ -7,6 +7,8 @@ import Image from "next/image";
 import { useTranscript } from "@/app/contexts/TranscriptContext";
 import { DownloadIcon, ClipboardCopyIcon } from "@radix-ui/react-icons";
 import { GuardrailChip } from "./GuardrailChip";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export interface TranscriptProps {
   userText: string;
@@ -23,7 +25,8 @@ function Transcript({
   canSend,
   downloadRecording,
 }: TranscriptProps) {
-  const { transcriptItems, toggleTranscriptItemExpand } = useTranscript();
+  const { transcriptItems, toggleTranscriptItemExpand, clearTranscript } =
+    useTranscript();
   const transcriptRef = useRef<HTMLDivElement | null>(null);
   const [prevLogs, setPrevLogs] = useState<TranscriptItem[]>([]);
   const [justCopied, setJustCopied] = useState(false);
@@ -71,25 +74,39 @@ function Transcript({
   };
 
   return (
-    <div className="flex flex-col flex-1 bg-white min-h-0 rounded-xl">
+    <div className="flex flex-col flex-1 bg-background min-h-0 rounded-xl border border-border">
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="flex items-center justify-between px-6 py-3 sticky top-0 z-10 text-base border-b bg-white rounded-t-xl">
+        <div className="flex items-center justify-between px-6 py-3 sticky top-0 z-10 text-base border-b border-border bg-background rounded-t-xl">
           <span className="font-semibold">Transcript</span>
           <div className="flex gap-x-2">
-            <button
+            <Button
               onClick={handleCopyTranscript}
-              className="w-24 text-sm px-3 py-1 rounded-md bg-gray-200 hover:bg-gray-300 flex items-center justify-center gap-x-1"
+              variant="secondary"
+              size="sm"
+              className="w-24"
             >
               <ClipboardCopyIcon />
               {justCopied ? "Copied!" : "Copy"}
-            </button>
-            <button
+            </Button>
+            <Button
+              onClick={clearTranscript}
+              variant="outline"
+              size="sm"
+              className="w-24"
+              disabled={transcriptItems.length === 0}
+              title="Clears local transcript history on this device"
+            >
+              Clear
+            </Button>
+            <Button
               onClick={downloadRecording}
-              className="w-40 text-sm px-3 py-1 rounded-md bg-gray-200 hover:bg-gray-300 flex items-center justify-center gap-x-1"
+              variant="secondary"
+              size="sm"
+              className="w-40"
             >
               <DownloadIcon />
               <span>Download Audio</span>
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -214,8 +231,8 @@ function Transcript({
         </div>
       </div>
 
-      <div className="p-4 flex items-center gap-x-2 flex-shrink-0 border-t border-gray-200">
-        <input
+      <div className="p-4 flex items-center gap-x-2 flex-shrink-0 border-t border-border">
+        <Input
           ref={inputRef}
           type="text"
           value={userText}
@@ -225,16 +242,17 @@ function Transcript({
               onSendMessage();
             }
           }}
-          className="flex-1 px-4 py-2 focus:outline-none"
+          className="flex-1"
           placeholder="Type a message..."
         />
-        <button
+        <Button
           onClick={onSendMessage}
           disabled={!canSend || !userText.trim()}
-          className="bg-gray-900 text-white rounded-full px-2 py-2 disabled:opacity-50"
+          size="icon"
+          className="rounded-full"
         >
           <Image src="arrow.svg" alt="Send" width={24} height={24} />
-        </button>
+        </Button>
       </div>
     </div>
   );

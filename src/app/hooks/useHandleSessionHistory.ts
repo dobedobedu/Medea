@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { useTranscript } from "@/app/contexts/TranscriptContext";
 import { useEvent } from "@/app/contexts/EventContext";
+import { tryRecordLearningUpdateFromText } from "@/lib/jasonLearning";
 
 export function useHandleSessionHistory() {
   const {
@@ -105,6 +106,7 @@ export function useHandleSessionHistory() {
         const failureDetails = JSON.parse(guardrailMessage);
         addTranscriptBreadcrumb('Output Guardrail Active', { details: failureDetails });
       } else {
+        tryRecordLearningUpdateFromText(text);
         addTranscriptMessage(itemId, role, text);
       }
     }
@@ -120,6 +122,7 @@ export function useHandleSessionHistory() {
       const text = extractMessageText(content);
 
       if (text) {
+        tryRecordLearningUpdateFromText(text);
         updateTranscriptMessage(itemId, text, false);
       }
     });

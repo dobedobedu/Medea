@@ -3,6 +3,9 @@ import React, { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { loadLearningProgress } from "@/lib/jasonLearning";
 
 // UI components
 import Transcript from "./components/Transcript";
@@ -59,6 +62,7 @@ function App() {
   const {
     addTranscriptMessage,
     addTranscriptBreadcrumb,
+    transcriptItems,
   } = useTranscript();
   const { logClientEvent, logServerEvent } = useEvent();
 
@@ -135,6 +139,25 @@ function App() {
   const { startRecording, stopRecording, downloadRecording } =
     useAudioDownload();
 
+  const [learningCounts, setLearningCounts] = useState<{
+    vocab: number;
+    holiday_words: number;
+    holiday_greetings: number;
+    lastWord?: string;
+  }>({ vocab: 0, holiday_words: 0, holiday_greetings: 0 });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const progress = loadLearningProgress();
+    const last = progress.updates[progress.updates.length - 1];
+    setLearningCounts({
+      vocab: progress.masteredByTrack.vocab.length,
+      holiday_words: progress.masteredByTrack.holiday_words.length,
+      holiday_greetings: progress.masteredByTrack.holiday_greetings.length,
+      lastWord: last?.word,
+    });
+  }, [transcriptItems.length]);
+
   const sendClientEvent = (eventObj: any, eventNameSuffix = "") => {
     try {
       sendEvent(eventObj);
@@ -157,7 +180,13 @@ function App() {
     }
 
     const agents = allAgentSets[finalAgentConfig];
-    const agentKeyToUse = agents[0]?.name || "";
+    const storedPreferred = localStorage.getItem(
+      `preferredAgent:${finalAgentConfig}`,
+    );
+    const agentKeyToUse =
+      (storedPreferred && agents.some((a) => a.name === storedPreferred)
+        ? storedPreferred
+        : agents[0]?.name) || "";
 
     setSelectedAgentName(agentKeyToUse);
     setSelectedAgentConfigSet(agents);
@@ -360,6 +389,8 @@ function App() {
     e: React.ChangeEvent<HTMLSelectElement>
   ) => {
     const newAgentName = e.target.value;
+    const agentSetKey = searchParams.get("agentConfig") || "default";
+    localStorage.setItem(`preferredAgent:${agentSetKey}`, newAgentName);
     // Reconnect session with the newly selected agent as root so that tool
     // execution works correctly.
     disconnectFromRealtime();
@@ -475,50 +506,41 @@ function App() {
   }, [sessionStatus]);
 
   return (
-    <div className="text-base flex flex-col h-screen bg-gray-100 text-gray-800 relative">
+    <div className="text-base flex flex-col h-screen bg-background text-foreground relative">
       {/* Three-Tab Top Bar */}
-      <div className="bg-white border-b border-gray-200 px-4 py-3">
-        <div className="flex justify-center space-x-2">
-          <button
+      <div className="bg-background border-b border-border px-4 py-3">
+        <div className="flex justify-center gap-2">
+          <Button
             onClick={() => handleTabChange("learn")}
-            className={`px-6 py-2 rounded-lg font-medium text-base transition-colors touch-manipulation ${
-              activeTab === "learn"
-                ? "bg-blue-500 text-white"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
+            variant={activeTab === "learn" ? "default" : "secondary"}
+            className="px-6 text-base touch-manipulation"
           >
             Learn
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => handleTabChange("socialSkills")}
-            className={`px-6 py-2 rounded-lg font-medium text-base transition-colors touch-manipulation ${
-              activeTab === "socialSkills"
-                ? "bg-blue-500 text-white"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
+            variant={activeTab === "socialSkills" ? "default" : "secondary"}
+            className="px-6 text-base touch-manipulation"
           >
             Interact
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => handleTabChange("dailyJournal")}
-            className={`px-6 py-2 rounded-lg font-medium text-base transition-colors touch-manipulation ${
-              activeTab === "dailyJournal"
-                ? "bg-blue-500 text-white"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
+            variant={activeTab === "dailyJournal" ? "default" : "secondary"}
+            className="px-6 text-base touch-manipulation"
           >
             Reflect
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Two-Column Layout */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left Column - Agent Panel (30% width on desktop) */}
-        <div className="hidden md:flex md:flex-col md:w-1/3 lg:w-[30%] bg-white border-r border-gray-200">
-          <div className="p-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-800">
-              {activeTab === "learn" && "Leanr"}
+        <div className="hidden md:flex md:flex-col md:w-1/3 lg:w-[30%] bg-background border-r border-border">
+          <div className="p-4 border-b border-border">
+            <h2 className="text-lg font-semibold">
+              {activeTab === "learn" && "Learn"}
               {activeTab === "socialSkills" && "Interact"}
               {activeTab === "dailyJournal" && "Reflect"}
             </h2>
@@ -527,24 +549,37 @@ function App() {
           <div className="flex-1 overflow-y-auto p-4">
             {selectedAgentConfigSet && (
               <div className="space-y-2">
+                {activeTab === "learn" && (
+                  <Card className="p-3">
+                    <div className="text-sm font-semibold">Learning</div>
+                    <div className="mt-1 text-sm text-muted-foreground">
+                      Vocab mastered: {learningCounts.vocab} · Holiday words:{" "}
+                      {learningCounts.holiday_words} · Holiday greetings:{" "}
+                      {learningCounts.holiday_greetings}
+                      {learningCounts.lastWord
+                        ? ` · Last: ${learningCounts.lastWord}`
+                        : ""}
+                    </div>
+                  </Card>
+                )}
                 {selectedAgentConfigSet.map((agent) => (
-                  <div
+                  <Card
                     key={agent.name}
-                    className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                    className={`p-3 cursor-pointer transition-colors ${
                       selectedAgentName === agent.name
-                        ? "border-blue-500 bg-blue-50"
-                        : "border-gray-200 hover:border-gray-300"
+                        ? "border-primary bg-accent"
+                        : "hover:bg-accent"
                     }`}
                     onClick={() => handleSelectedAgentChange({ target: { value: agent.name } } as any)}
                   >
-                    <div className="font-medium text-gray-800">{agent.name}</div>
-                    <div className="text-sm text-gray-500">
+                    <div className="font-medium">{agent.name}</div>
+                    <div className="text-sm text-muted-foreground">
                       {agent.name === selectedAgentName ? "Active" : "Tap to select"}
                     </div>
-                  </div>
+                  </Card>
                 ))}
 
-                <button className="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors">
+                <button className="w-full p-3 border-2 border-dashed border-border rounded-lg text-muted-foreground hover:bg-accent transition-colors">
                   + Add Agent
                 </button>
               </div>
@@ -554,34 +589,47 @@ function App() {
 
         {/* Mobile Agent Panel (Accordion on ≤768px) */}
         <div className="md:hidden w-full">
-          <div className="bg-white border-b border-gray-200">
+          <div className="bg-background border-b border-border">
             <div className="p-4">
-              <h2 className="text-lg font-semibold text-gray-800 mb-3">
-                {activeTab === "learn" && "Leanr"}
+              <h2 className="text-lg font-semibold mb-3">
+                {activeTab === "learn" && "Learn"}
                 {activeTab === "socialSkills" && "Interact"}
                 {activeTab === "dailyJournal" && "Reflect"}
               </h2>
 
               {selectedAgentConfigSet && (
                 <div className="space-y-2">
+                  {activeTab === "learn" && (
+                    <Card className="p-3">
+                      <div className="text-sm font-semibold">Learning</div>
+                      <div className="mt-1 text-sm text-muted-foreground">
+                        Vocab mastered: {learningCounts.vocab} · Holiday words:{" "}
+                        {learningCounts.holiday_words} · Holiday greetings:{" "}
+                        {learningCounts.holiday_greetings}
+                        {learningCounts.lastWord
+                          ? ` · Last: ${learningCounts.lastWord}`
+                          : ""}
+                      </div>
+                    </Card>
+                  )}
                   {selectedAgentConfigSet.map((agent) => (
-                    <div
+                    <Card
                       key={agent.name}
-                      className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                      className={`p-3 cursor-pointer transition-colors ${
                         selectedAgentName === agent.name
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-200 hover:border-gray-300"
+                          ? "border-primary bg-accent"
+                          : "hover:bg-accent"
                       }`}
                       onClick={() => handleSelectedAgentChange({ target: { value: agent.name } } as any)}
                     >
-                      <div className="font-medium text-gray-800">{agent.name}</div>
-                      <div className="text-sm text-gray-500">
+                      <div className="font-medium">{agent.name}</div>
+                      <div className="text-sm text-muted-foreground">
                         {agent.name === selectedAgentName ? "Active" : "Tap to select"}
                       </div>
-                    </div>
+                    </Card>
                   ))}
 
-                  <button className="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors">
+                  <button className="w-full p-3 border-2 border-dashed border-border rounded-lg text-muted-foreground hover:bg-accent transition-colors">
                     + Add Agent
                   </button>
                 </div>
@@ -592,15 +640,16 @@ function App() {
 
         {/* Right Column - Transcript Area */}
         <div className="flex-1 flex flex-col min-w-0">
-          <div className="p-3 bg-white border-b border-gray-200">
-            <div className="text-sm font-medium text-gray-600">
+          <div className="p-3 bg-background border-b border-border">
+            <div className="text-sm font-medium text-muted-foreground">
               {selectedAgentName && (
-                <span>Active Agent: <span className="text-blue-600">{selectedAgentName}</span></span>
+                <span>
+                  Active Agent:{" "}
+                  <span className="text-primary">{selectedAgentName}</span>
+                </span>
               )}
               {sessionStatus && (
-                <span className="ml-3 text-gray-500">
-                  ({sessionStatus})
-                </span>
+                <span className="ml-3">({sessionStatus})</span>
               )}
             </div>
           </div>
@@ -618,50 +667,41 @@ function App() {
       </div>
 
       {/* Footer with Control Buttons */}
-      <div className="bg-white border-t border-gray-200 px-4 py-3">
+      <div className="bg-background border-t border-border px-4 py-3">
         <div className="flex justify-between items-center">
-          <button
+          <Button
             onClick={toggleLogs}
-            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-700 font-medium transition-colors touch-manipulation"
+            variant="secondary"
+            className="touch-manipulation"
           >
             {isEventsPaneExpanded ? "Hide Logs △" : "Logs ▽"}
-          </button>
+          </Button>
 
           {/* Connection Control Buttons */}
           <div className="flex flex-col gap-2">
             <div className="flex gap-2">
               {/* Connect/End Conditional Button */}
-              <button
+              <Button
                 onClick={onToggleConnection}
                 disabled={sessionStatus === 'CONNECTING'}
-                className={`px-4 py-2 font-medium transition-colors touch-manipulation rounded-lg ${
-                  sessionStatus === 'CONNECTED'
-                    ? "bg-red-600 hover:bg-red-700 text-white"
-                    : sessionStatus === 'CONNECTING'
-                      ? "bg-gray-400 text-white cursor-not-allowed"
-                      : "bg-green-600 hover:bg-green-700 text-white"
-                }`}
+                variant={sessionStatus === "CONNECTED" ? "destructive" : "default"}
+                className="touch-manipulation"
               >
                 {sessionStatus === 'CONNECTED' ? "End" : sessionStatus === 'CONNECTING' ? "Connecting..." : "Connect"}
-              </button>
+              </Button>
 
               {/* Push-to-Talk Button */}
-              <button
+              <Button
                 onMouseDown={handleTalkButtonDown}
                 onMouseUp={handleTalkButtonUp}
                 onTouchStart={handleTalkButtonDown}
                 onTouchEnd={handleTalkButtonUp}
                 disabled={!isPTTActive || sessionStatus !== 'CONNECTED'}
-                className={`px-4 py-2 font-medium transition-colors touch-manipulation rounded-lg ${
-                  isPTTUserSpeaking
-                    ? "bg-orange-500 text-white"
-                    : isPTTActive && sessionStatus === 'CONNECTED'
-                      ? "bg-blue-600 hover:bg-blue-700 text-white"
-                      : "bg-gray-400 text-gray-200 cursor-not-allowed"
-                }`}
+                variant={isPTTUserSpeaking ? "secondary" : "outline"}
+                className="touch-manipulation"
               >
                 {isPTTUserSpeaking ? "Speaking..." : "Push to Talk"}
-              </button>
+              </Button>
             </div>
 
             {/* Push-to-Talk Toggle */}
@@ -676,14 +716,14 @@ function App() {
               />
               <label
                 htmlFor="ptt-toggle-main"
-                className={`cursor-pointer ${sessionStatus !== 'CONNECTED' ? 'text-gray-400' : 'text-gray-700'}`}
+                className={`cursor-pointer ${sessionStatus !== 'CONNECTED' ? 'text-muted-foreground' : ''}`}
               >
                 Enable Push-to-Talk (hold button to speak)
               </label>
             </div>
           </div>
 
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-muted-foreground">
             {sessionStatus}
           </div>
         </div>
@@ -693,15 +733,16 @@ function App() {
       {isEventsPaneExpanded && (
         <div className="fixed inset-0 z-50 flex items-end justify-center">
           <div className="absolute inset-0 bg-black bg-opacity-50" onClick={toggleLogs} />
-          <div className="relative w-full h-3/4 bg-white rounded-t-xl shadow-xl flex flex-col">
-            <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+          <div className="relative w-full h-3/4 bg-background rounded-t-xl shadow-xl flex flex-col">
+            <div className="p-4 border-b border-border flex justify-between items-center">
               <h3 className="text-lg font-semibold">Logs</h3>
-              <button
+              <Button
                 onClick={toggleLogs}
-                className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded text-gray-700 transition-colors"
+                variant="secondary"
+                size="sm"
               >
                 Hide Logs △
-              </button>
+              </Button>
             </div>
             <div className="flex-1 overflow-y-auto">
               <div className="h-full w-full">
