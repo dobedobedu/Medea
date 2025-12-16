@@ -548,7 +548,7 @@ function App() {
       </div>
 
       {/* Two-Column Layout */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
         {/* Left Column - Agent Panel (30% width on desktop) */}
         <div className="hidden md:flex md:flex-col md:w-1/3 lg:w-[30%] bg-background border-r border-border">
           <div className="p-4 border-b border-border">
@@ -652,7 +652,7 @@ function App() {
         </div>
 
         {/* Right Column - Transcript Area */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 min-h-0">
           <div className="p-3 bg-background border-b border-border">
             <div className="text-sm font-medium text-muted-foreground">
               {selectedAgentName && (
@@ -667,7 +667,7 @@ function App() {
             </div>
           </div>
 
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-hidden min-h-0">
             <Transcript
               userText={userText}
               setUserText={setUserText}
