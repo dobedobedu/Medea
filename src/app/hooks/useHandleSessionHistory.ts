@@ -73,6 +73,10 @@ export function useHandleSessionHistory() {
     const function_name = lastFunctionCall?.name;
     const function_args = lastFunctionCall?.arguments;
 
+    if (function_name === "recordLearningProgress") {
+      return;
+    }
+
     addTranscriptBreadcrumb(
       `function call: ${function_name}`,
       function_args
@@ -80,6 +84,9 @@ export function useHandleSessionHistory() {
   }
   function handleAgentToolEnd(details: any, _agent: any, _functionCall: any, result: any) {
     const lastFunctionCall = extractFunctionCallByName(_functionCall.name, details?.context?.history);
+    if (lastFunctionCall?.name === "recordLearningProgress") {
+      return;
+    }
     addTranscriptBreadcrumb(
       `function call result: ${lastFunctionCall?.name}`,
       maybeParseJson(result)

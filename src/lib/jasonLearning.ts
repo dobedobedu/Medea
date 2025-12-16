@@ -16,6 +16,7 @@ export interface LearningProgress {
 
 const STORAGE_KEY = "medea:learningProgress:v1";
 const MAX_UPDATES = 400;
+export const LEARNING_PROGRESS_UPDATED_EVENT = "medea:learningProgressUpdated";
 
 const DEFAULT_PROGRESS: LearningProgress = {
   version: 1,
@@ -101,6 +102,12 @@ export function recordLearningUpdate(update: Omit<LearningUpdate, "atMs">) {
   }
 
   saveLearningProgress(progress);
+
+  try {
+    window.dispatchEvent(new CustomEvent(LEARNING_PROGRESS_UPDATED_EVENT));
+  } catch {
+    // ignore
+  }
 }
 
 export function tryRecordLearningUpdateFromText(text: string) {

@@ -1,7 +1,6 @@
 import { RealtimeAgent } from "@openai/agents/realtime";
 
-const learningUpdateFormat = `After each practice turn, output a hidden progress line exactly like:
-HANDOFF LEARN_PROGRESS {"learning_update":{"track":"[vocab|holiday_words|holiday_greetings]","word":"[word or phrase]","confidence":"[good|needs_practice]"}}`;
+import { recordLearningProgress } from "@/app/agentConfigs/learnProgressTool";
 
 export const holidayWordsAgent = new RealtimeAgent({
   name: "Holiday words",
@@ -18,13 +17,16 @@ FORMAT (keep it fast):
 1) Pick ONE random word from the list and say: "[Word] means [simple definition]."
 2) Give 1 example sentence.
 3) Ask Jason: "Now you use [word] in a sentence."
-4) If Jason replies with a reasonable sentence or correct meaning: praise briefly, then log progress with confidence=good.
-5) If Jason struggles: give a shorter definition + a better example, then log progress with confidence=needs_practice.
+4) If Jason replies with a reasonable sentence or correct meaning: praise briefly, then record progress with confidence=good.
+5) If Jason struggles: give a shorter definition + a better example, then record progress with confidence=needs_practice.
 
-${learningUpdateFormat}
+PROGRESS (IMPORTANT):
+- After you evaluate Jason, CALL the tool recordLearningProgress with:
+  track="holiday_words", word="[the word]", confidence="good|needs_practice"
+- Do NOT say the tool name or any progress text out loud.
 
 Do not introduce yourself. Do not use long explanations. Keep to 3-5 short lines.`,
-  tools: [],
+  tools: [recordLearningProgress],
   handoffDescription: "Holiday vocabulary (Christmas season) practice",
 });
 
@@ -99,12 +101,15 @@ FLOW:
 2) Ask: "What does [word] mean, or use it in a sentence?"
 3) If correct: brief praise + one example sentence.
 4) If not: give the short definition + one example sentence.
-5) Log progress every turn using the hidden progress line.
+5) Record progress every turn using the tool.
 
-${learningUpdateFormat}
+PROGRESS (IMPORTANT):
+- After you evaluate Jason, CALL the tool recordLearningProgress with:
+  track="vocab", word="[the word]", confidence="good|needs_practice"
+- Do NOT say the tool name or any progress text out loud.
 
 Keep responses short. Do not invent new words.`,
-  tools: [],
+  tools: [recordLearningProgress],
   handoffDescription: "5th grade vocabulary practice (50 words)",
 });
 
@@ -136,10 +141,13 @@ FLOW:
    - good = polite + correct situation
    - needs_practice = wrong situation or missing politeness
 
-${learningUpdateFormat}
+PROGRESS (IMPORTANT):
+- After you evaluate Jason, CALL the tool recordLearningProgress with:
+  track="holiday_greetings", word="[the greeting/phrase]", confidence="good|needs_practice"
+- Do NOT say the tool name or any progress text out loud.
 
 Keep it warm but brief. No long cultural lectures.`,
-  tools: [],
+  tools: [recordLearningProgress],
   handoffDescription: "Holiday greetings + polite phrases practice",
 });
 
@@ -148,4 +156,3 @@ export const learnScenario = [
   fifthGradeVocabAgent,
   holidayGreetingsAgent,
 ];
-

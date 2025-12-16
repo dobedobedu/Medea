@@ -5,7 +5,10 @@ import { v4 as uuidv4 } from "uuid";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { loadLearningProgress } from "@/lib/jasonLearning";
+import {
+  LEARNING_PROGRESS_UPDATED_EVENT,
+  loadLearningProgress,
+} from "@/lib/jasonLearning";
 
 // UI components
 import Transcript from "./components/Transcript";
@@ -62,7 +65,6 @@ function App() {
   const {
     addTranscriptMessage,
     addTranscriptBreadcrumb,
-    transcriptItems,
   } = useTranscript();
   const { logClientEvent, logServerEvent } = useEvent();
 
@@ -148,15 +150,26 @@ function App() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const progress = loadLearningProgress();
-    const last = progress.updates[progress.updates.length - 1];
-    setLearningCounts({
-      vocab: progress.masteredByTrack.vocab.length,
-      holiday_words: progress.masteredByTrack.holiday_words.length,
-      holiday_greetings: progress.masteredByTrack.holiday_greetings.length,
-      lastWord: last?.word,
-    });
-  }, [transcriptItems.length]);
+
+    const refresh = () => {
+      const progress = loadLearningProgress();
+      const last = progress.updates[progress.updates.length - 1];
+      setLearningCounts({
+        vocab: progress.masteredByTrack.vocab.length,
+        holiday_words: progress.masteredByTrack.holiday_words.length,
+        holiday_greetings: progress.masteredByTrack.holiday_greetings.length,
+        lastWord: last?.word,
+      });
+    };
+
+    refresh();
+    window.addEventListener(LEARNING_PROGRESS_UPDATED_EVENT, refresh as any);
+    return () =>
+      window.removeEventListener(
+        LEARNING_PROGRESS_UPDATED_EVENT,
+        refresh as any,
+      );
+  }, []);
 
   const sendClientEvent = (eventObj: any, eventNameSuffix = "") => {
     try {
